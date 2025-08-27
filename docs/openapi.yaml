@@ -33,7 +33,7 @@ tags:
   - name: Validate
 
 paths:
-  /ping:
+  /ping/:
     get:
       tags: [Ping]
       summary: Simple health check and version
