@@ -18,13 +18,24 @@ You can generate and manage your API keys from the [SecretCryptos Partner page](
 ---
 
 ## Contents
-- [Authentication & API key usage](docs.md#authentication) 
-- [Mixer API (create orders, fees, limits)](docs.md#-mixer--create-order)  
-- [Exchange API (swaps, quotes, limits)](docs.md#-exchange--create-order)  
-- [Prices endpoint](docs.md#-prices)  
-- [Order management (check & delete)](docs.md#-orders)  
-- [Signature validation](docs.md#-validate-signature)  
-- [Rate limits](docs.md#-rate-limits)
+- [Authentication & API key usage](docs.md#authentication)  
+- [Getting your API Key](docs.md#getting-your-api-key)  
+- [Using your API key safely](docs.md#using-your-api-key-safely)  
+- [Ping](docs.md#ping)  
+- [Meta](docs.md#meta)  
+- [Meta / Mixer](docs.md#meta--mixer)  
+- [Meta / Exchange](docs.md#meta--exchange)  
+- [MIXER](docs.md#mixer)  
+  - [Create Order](docs.md#mixer--create-order)  
+- [EXCHANGE](docs.md#exchange)  
+  - [Create Order](docs.md#exchange--create-order)  
+- [Prices endpoint](docs.md#prices--get-market-rates)  
+- [ORDERS](docs.md#orders)  
+  - [Check Status](docs.md#orders--check-status-mixer--exchange)  
+  - [Delete Order](docs.md#orders--delete)  
+- [Signature validation](docs.md#validate--signature)  
+- [Rate limits](docs.md#rate-limits)  
+
 
 ---
 
