@@ -8,7 +8,7 @@ The **SecretCryptos API** provides secure, simple, and consistent access to our 
 
 ---
 
-## Authentication 🔑
+## Authentication
 
 All authenticated requests require an API key.
 
