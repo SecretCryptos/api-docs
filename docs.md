@@ -7,7 +7,7 @@ The **SecretCryptos API** provides secure, simple, and consistent access to our 
 - **Live Docs:** https://secretcryptos.com/api
 
 ---
-🔑
+
 ## Authentication
 
 All authenticated requests require an API key.
@@ -21,7 +21,7 @@ Authorization: Bearer YOUR_API_KEY
 - **Do not** expose your API key in frontend JavaScript. Keep it server-side and proxy responses to the browser.
 
 ---
-🆔
+
 ## Getting your API Key 
 
 1. Go to the **Partner** page: https://secretcryptos.com/partner  
@@ -32,7 +32,7 @@ Authorization: Bearer YOUR_API_KEY
 > ⚠️ Keep your API key secret. Never share it publicly or hard-code it into public repositories.
 
 ---
-🔒
+
 ## Using your API key safely 
 
 **cURL (server-side)**
@@ -83,7 +83,7 @@ def mixer_meta():
 
 ---
 
-## Ping 📡 
+## Ping
 
 Simple health check and version.
 
@@ -102,7 +102,7 @@ Simple health check and version.
 
 ---
 
-## Meta 🗂️ 
+## Meta
 
 Root discovery for available meta endpoints.
 
@@ -132,7 +132,7 @@ Root discovery for available meta endpoints.
 
 ---
 
-## Meta / Mixer 🔄 
+## Meta / Mixer
 
 Per-coin mixer configuration (min/max, service/per-address fees, decimals, confirmations).
 
@@ -168,7 +168,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 
 ---
 
-## Meta / Exchange 🔄 
+## Meta / Exchange
 
 Exchange configuration: maintenance, live USD prices, and per-network limits/fees.
 
@@ -203,7 +203,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 
 ---
 
-## MIXER 🌀 
+## MIXER
 
 The **Mixer API** lets you programmatically create privacy-preserving transactions by splitting to one or more output addresses with optional delays.
 
@@ -339,7 +339,7 @@ curl_close($ch);
 
 ---
 
-## EXCHANGE 🔁 
+## EXCHANGE
 
 Swap a **from_coin/from_network** deposit into a single **to_coin/to_network** destination.
 
@@ -466,7 +466,7 @@ When `qrcode=1`, embed `deposit.qr_code` as an `<img>` to let users scan the dep
 
 ---
 
-## PRICES / Get Market Rates 💱 
+## PRICES / Get Market Rates
 
 Retrieve the latest market prices in **USD**.
 
@@ -522,9 +522,9 @@ curl_close($ch);
 
 ---
 
-## ORDERS 📦 
+## ORDERS
 
-### ORDERS / Check Status (Mixer & Exchange) ✅ 
+### ORDERS / Check Status (Mixer & Exchange)
 
 Use a single endpoint to check status of both **mixer** and **exchange** orders.
 
@@ -622,7 +622,7 @@ curl_close($ch);
 
 ---
 
-### ORDERS / Delete ❌ 
+### ORDERS / Delete
 
 Delete an existing order so it can no longer be accessed through the API.
 
@@ -657,7 +657,7 @@ curl_close($ch);
 
 ---
 
-## VALIDATE / Signature 🔏 
+## VALIDATE / Signature
 
 Validate a digitally signed payload (Letter of Guarantee). The API returns a verified subset of related order details.
 
@@ -735,7 +735,7 @@ curl_close($ch);
 
 ---
 
-## Rate Limits 📊 
+## Rate Limits
 
 **Default:** 1000 requests / day / API key  
 Higher tiers are available upon request.
