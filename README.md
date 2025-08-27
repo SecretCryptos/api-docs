@@ -18,7 +18,7 @@ You can generate and manage your API keys from the [SecretCryptos Partner page](
 ---
 
 ## Contents
-- [Authentication & API key usage](docs.md#-authentication)  
+- [Authentication & API key usage](docs.md#authentication) 
 - [Mixer API (create orders, fees, limits)](docs.md#-mixer--create-order)  
 - [Exchange API (swaps, quotes, limits)](docs.md#-exchange--create-order)  
 - [Prices endpoint](docs.md#-prices)  
