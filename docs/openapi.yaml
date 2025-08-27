@@ -1,0 +1,1118 @@
+openapi: 3.1.0
+info:
+  title: SecretCryptos API
+  version: "1.2.6"
+  description: |
+    The SecretCryptos API provides secure, simple, and consistent access to our Mixer and Exchange services.
+    This specification mirrors the docs.md "Lite" document exactly (field names, shapes, and examples).
+
+    Base URL: https://api.secretcryptos.com/v1
+
+    ## Authentication
+    - Header: `Authorization: Bearer YOUR_API_KEY`
+    - All requests must use HTTPS.
+    - Never call authenticated endpoints from client-side JavaScript. Keep your API key on the server and proxy responses to the browser.
+
+    ## Rate Limits
+    - 1000 requests / day / API key.
+
+servers:
+  - url: https://api.secretcryptos.com/v1
+    description: Primary API
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Ping
+  - name: Meta
+  - name: MIXER
+  - name: EXCHANGE
+  - name: Prices
+  - name: Orders
+  - name: Validate
+
+paths:
+  /ping:
+    get:
+      tags: [Ping]
+      summary: Simple health check and version
+      security: []   # no auth
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PingResponse"
+              examples:
+                ok:
+                  value:
+                    ok: true
+                    service: "SecretCryptos API"
+                    version: "1.2.6"
+                    ts: 1723800000
+
+  /meta:
+    get:
+      tags: [Meta]
+      summary: Root discovery for available meta endpoints
+      security: []   # no auth
+      responses:
+        "200":
+          description: Meta index
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaRoot"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    version: "1.2.6"
+                    server_time:
+                      iso: "2025-08-20T16:04:53+00:00"
+                      unix: 1755705893
+                    docs:
+                      html: "https://secretcryptos.com/api"
+                    endpoints:
+                      - { name: "Ping", path: "/v1/ping", method: "GET", auth: false, desc: "Simple health check." }
+                      - { name: "Meta (Mixer)", path: "/v1/meta/mixer", method: "GET", auth: true, desc: "Supported coins/networks and mixer rules." }
+                      - { name: "Meta (Exchange)", path: "/v1/meta/exchange", method: "GET", auth: true, desc: "Supported trading pairs and exchange limits." }
+                      - { name: "Create Mixer Order", path: "/v1/mixer/orders", method: "POST", auth: true, desc: "Create a new mixer order." }
+                      - { name: "Create Exchange Order", path: "/v1/exchange/orders", method: "POST", auth: true, desc: "Create a new exchange order." }
+                      - { name: "Check Order", path: "/v1/orders/check", method: "POST", auth: true, desc: "Query order status by trackcode." }
+                      - { name: "Delete Order", path: "/v1/orders/delete", method: "POST", auth: true, desc: "Delete an order (if allowed)." }
+                      - { name: "Prices", path: "/v1/prices", method: "GET", auth: true, desc: "Current exchange rates and prices." }
+                      - { name: "Validate Signature", path: "/v1/validate", method: "POST", auth: false, desc: "Validate a digital guarantee letter signature." }
+
+  /meta/mixer:
+    get:
+      tags: [Meta]
+      summary: Per-coin mixer configuration
+      responses:
+        "200":
+          description: Mixer meta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaMixerResponse"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    mixer:
+                      BTC:
+                        name: "Bitcoin"
+                        symbol: "₿"
+                        service_fee: 0.1
+                        maintenance: 0
+                        per_address_fee: "0.00005000"
+                        decimals: 8
+                        confirmations: 1
+                        networks:
+                          btc:
+                            label: "Bitcoin (BTC)"
+                            min: 0.001
+                            max: 20
+
+  /meta/exchange:
+    get:
+      tags: [Meta]
+      summary: Exchange configuration and limits
+      responses:
+        "200":
+          description: Exchange meta
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaExchangeResponse"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    exchange:
+                      maintenance: 0
+                      prices_usd:
+                        BTC: "117799.51713382"
+                        ETH: "4409.46254479"
+                        USDT: "1.0005594"
+                      outputs:
+                        BTC:
+                          name: "Bitcoin"
+                          symbol: "₿"
+                          networks:
+                            btc:
+                              label: "Bitcoin (BTC)"
+                              min_usd: "100"
+                              max_usd: "182520"
+                              service_fee: "0.5"
+
+  /mixer/orders:
+    post:
+      tags: [MIXER]
+      summary: Create a new mixer order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MixerCreateRequest"
+            examples:
+              btc_multi_outputs:
+                value:
+                  action: "create_order"
+                  addresses:
+                    - { address: "35iMHbUZe...", percent: "84.93", delay: "0" }
+                    - { address: "1P279UBCh...", percent: "15.07", delay: "120" }
+                  amount: "10.00000000"
+                  crypto: "btc"
+                  network: "btc"
+                  partner: "YOUR_PARTNER_KEY"
+                  service_fee: 0.45
+                  qrcode: 1
+              xrp_single_with_tag:
+                value:
+                  action: "create_order"
+                  addresses:
+                    - { address: "raGXwk3P9y...", percent: "100", delay: "0", destination_tag: "435757008" }
+                  amount: "10.00000000"
+                  crypto: "btc"
+                  network: "btc"
+                  partner: "YOUR_PARTNER_KEY"
+                  service_fee: 0.45
+                  qrcode: 1
+      responses:
+        "200":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MixerCreateResponse"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    trackcode: "6A5FB3BA8A150EC9"
+                    maintenance: 0
+                    deposit:
+                      address: "31wXuLH5AK..."
+                      name: "Bitcoin"
+                      symbol: "₿"
+                      network: "btc"
+                      network_label: "Bitcoin (BTC)"
+                      deposit_amount: "10.00000000"
+                      min_amount: 0.001
+                      max_amount: 20
+                      expires_at: 1755614593
+                      qr_code: "data:image/png;base64,iVBORw0....."
+                    fees:
+                      service_fee_percent: 0.45
+                      service_fee_value: "0.04500000"
+                      fee_per_output: "0.00005000"
+                      fee_outputs_total: "0.00010000"
+                      fee_total: "0.04510000"
+                    outputs:
+                      - id: 1
+                        address: "35iMHbUZe..."
+                        destination_tag: null
+                        share_percent: 84.93
+                        delay_minutes: 0
+                        delay_label: "0h 0m"
+                        amount: "8.45469657"
+                        time: 1755441793
+                      - id: 2
+                        address: "1P279UBCh..."
+                        destination_tag: null
+                        share_percent: 15.07
+                        delay_minutes: 120
+                        delay_label: "2h 0m"
+                        amount: "1.50020343"
+                        time: 1755448993
+                    signature_text: "...."
+        "400":
+          description: Validation errors (e.g., BAD_REQUEST, AMOUNT_TOO_LOW/HIGH)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "429":
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+
+  /exchange/orders:
+    post:
+      tags: [EXCHANGE]
+      summary: Create a new exchange order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExchangeCreateRequest"
+            examples:
+              eth_to_doge:
+                value:
+                  from_coin: "eth"
+                  from_network: "eth"
+                  to_coin: "doge"
+                  to_network: "doge"
+                  to_address: "DLPaeuaJi2..."
+                  amount: "1.00000000"
+                  service_fee: 0.6
+                  partner: "YOUR_PARTNER_KEY"
+                  qrcode: 1
+              usdt_trx_to_xrp_with_tag:
+                value:
+                  from_coin: "usdt"
+                  from_network: "trx"
+                  to_coin: "xrp"
+                  to_network: "xrp"
+                  to_address: "rLWyHZwAhs..."
+                  destination_tag: "123456"
+                  amount: "250"
+              btc_to_ton_with_memo:
+                value:
+                  from_coin: "btc"
+                  from_network: "btc"
+                  to_coin: "ton"
+                  to_network: "ton"
+                  to_address: "UQDTQmCrng..."
+                  memo: "MYMEMO123"
+                  amount: "0.015"
+      responses:
+        "200":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeCreateResponse"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    type: "exchange"
+                    trackcode: "D391FC08747E7B04"
+                    pair: { from: "ETH_eth", to: "DOGE_doge" }
+                    deposit:
+                      address: "0x7ed2bf65..."
+                      name: "Ethereum"
+                      symbol: "Ξ"
+                      network: "eth"
+                      network_label: "Ethereum (ERC20)"
+                      deposit_amount: "1.00000000"
+                      min_usd: 100
+                      max_usd: 88565
+                      expires_at: 1755781843
+                      qr_code: "data:image/png;base64,..."
+                    quote:
+                      from: { coin: "ETH", network: "eth", price_usd: 4300.8836, amount: "1.00000000", amount_usd: "4300.88362842" }
+                      to:   { coin: "DOGE", network: "doge", price_usd: 0.22014648, estimated_receive: "19419.24455241" }
+                      fee_percent: 0.6
+                      final_usd: "4275.07832665"
+                    receive:
+                      address: "DLPaeuaJi2..."
+                      destination_tag: null
+                      coin: "DOGE"
+                      network: "doge"
+                      percent: 100
+                      delay_minutes: 10
+                      delay_label: "0h 10m"
+                      amount: "19419.24455241"
+                      time: 1755609642
+                    outputs:
+                      - id: 1
+                        address: "DLPaeuaJi2..."
+                        destination_tag: null
+                        share_percent: 100
+                        delay_minutes: 10
+                        delay_label: "0h 10m"
+                        amount: "19419.24455241"
+                        time: 1755609642
+                    signature_text: "..."
+        "400":
+          description: Validation errors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+
+  /prices:
+    get:
+      tags: [Prices]
+      summary: Retrieve latest market prices (USD)
+      parameters:
+        - in: query
+          name: symbols
+          required: false
+          schema:
+            type: string
+          description: Comma-separated symbols (e.g., BTC,ETH,USDT). If omitted, all supported coins are returned.
+      responses:
+        "200":
+          description: Prices
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricesResponse"
+              examples:
+                sample:
+                  value:
+                    ok: true
+                    base: "USD"
+                    ts: 1755600000
+                    prices:
+                      BTC: "117799.51713382"
+                      ETH: "4409.46254479"
+                      USDT: "1.0005594"
+        "400":
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "500":
+          description: SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+
+  /orders/check:
+    post:
+      tags: [Orders]
+      summary: Check status of mixer or exchange order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCheckRequest"
+            examples:
+              mixer_full_unmasked:
+                value:
+                  trackcode: "554FEC10054743FD"
+                  type: "mixer"
+                  outputs: "full"
+                  mask_addresses: false
+      responses:
+        "200":
+          description: Status payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCheckResponse"
+              examples:
+                mixer_fully_funded:
+                  value:
+                    ok: true
+                    type: "mixer"
+                    trackcode: "6A5FB3BA8A150EC9"
+                    deposit:
+                      confirm_status: 2
+                      coin: "btc"
+                      network: "btc"
+                      delete_in_sec: 167812
+                      funding:
+                        waiting_balance: "10.00000000"
+                        received_balance: "10.00000000"
+                        remaining_need: "0.00000000"
+                        is_fully_funded: true
+                        can_start: true
+                    outputs:
+                      - index: 1
+                        address: "35iMHbUZe..."
+                        destination_tag: null
+                        coin: "btc"
+                        network: "btc"
+                        share_percent: 84.93
+                        delay_label: "0h 0m"
+                        delay_seconds: 0
+                        state: 2
+                        confirm: 1
+                        tx: "135f451af7f894....fafb578eee9e9c4"
+                        amount: "8.45469657"
+                        left_seconds: 0
+                      - index: 2
+                        address: "1P279UBCh..."
+                        destination_tag: null
+                        coin: "btc"
+                        network: "btc"
+                        share_percent: 15.07
+                        delay_label: "2h 0m"
+                        delay_seconds: 7200
+                        state: 1
+                        confirm: 0
+                        tx: ""
+                        amount: "1.50020343"
+                        left_seconds: 5916
+                exchange_underfunded_summary:
+                  value:
+                    ok: true
+                    type: "exchange"
+                    trackcode: "A1B2C3D4E5F6A7B8"
+                    deposit:
+                      confirm_status: 2
+                      coin: "usdt"
+                      network: "eth"
+                      delete_in_sec: 14321
+                      funding:
+                        waiting_balance: "500.00000000"
+                        received_balance: "420.00000000"
+                        remaining_need: "80.00000000"
+                        is_fully_funded: false
+                        can_start: false
+                    status_reason: "INSUFFICIENT_FUNDS"
+                    outputs:
+                      count: 3
+                      sent_count: 0
+                      sent_total: "0.00000000"
+        "404":
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "400":
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+
+  /orders/delete:
+    post:
+      tags: [Orders]
+      summary: Delete an existing order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderDeleteRequest"
+            examples:
+              sample:
+                value:
+                  trackcode: "D391FC08747E7B04"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDeleteResponse"
+              examples:
+                ok:
+                  value:
+                    ok: true
+                    trackcode: "D391FC08747E7B04"
+                    type: "exchange"
+                    deleted: true
+        "404":
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "400":
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+        "500":
+          description: SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorStd"
+
+  /validate:
+    post:
+      tags: [Validate]
+      summary: Validate a digitally signed payload (Letter of Guarantee)
+      security: []   # explicitly no auth per docs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateRequest"
+            examples:
+              example:
+                value:
+                  signature: |
+                    -----BEGIN DIGITAL SIGNATURE-----
+                    eyJ0cmFjayI6ICJEMzkxRkMwODc0N0U3QjA0IiwgInR5cGUiOiAibWl4ZXIiLCAiZXh0cmEiOiAiLi4uIn0=
+                    -----END DIGITAL SIGNATURE-----
+      responses:
+        "200":
+          description: Validation result or error
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ValidateSuccess"
+                  - $ref: "#/components/schemas/ErrorStd"
+              examples:
+                success:
+                  value:
+                    ok: true
+                    message: "The signature has been validated successfully."
+                    type: "mixer"
+                    route: "deposit"
+                    trackcode: "6A5FB3BA8A150EC9"
+                    order:
+                      deposit_address: "31wXuLH5AK..."
+                      service_fee: "0.45"
+                      coin: "btc"
+                      network: "btc"
+                      waiting_balance: "10.00000000"
+                      created_at: "1755698732"
+                    outputs:
+                      - coin: "btc"
+                        network: "btc"
+                        address: "35iMHbUZe..."
+                        destination_tag: ""
+                        share_percent: "84.93"
+                        delay_minutes: 0
+                        delay_label: "0h 0m"
+                        amount: "8.45469657"
+                      - coin: "btc"
+                        network: "btc"
+                        address: "1P279UBCh..."
+                        destination_tag: ""
+                        share_percent: "15.07"
+                        delay_minutes: 120
+                        delay_label: "2h 0m"
+                        amount: "1.50020343"
+                    outputs_count: 2
+                error_missing_sig:
+                  value:
+                    ok: false
+                    error: "BAD_REQUEST"
+                    message: "Digital signature is required"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ---- Common error (docs style)
+    ErrorStd:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          const: false
+        error:
+          type: string
+          description: Error code (e.g., BAD_REQUEST, NOT_FOUND, INVALID_SIGNATURE, SERVER_ERROR)
+        message:
+          type: string
+      required: [ok, error, message]
+
+    # ---- /ping
+    PingResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        service: { type: string }
+        version: { type: string }
+        ts: { type: integer, description: "Unix epoch (seconds)" }
+      required: [ok, service, version, ts]
+
+    # ---- /meta
+    MetaRoot:
+      type: object
+      properties:
+        ok: { type: boolean }
+        version: { type: string }
+        server_time:
+          type: object
+          properties:
+            iso: { type: string }
+            unix: { type: integer }
+          required: [iso, unix]
+        docs:
+          type: object
+          properties:
+            html: { type: string }
+          required: [html]
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              path: { type: string }
+              method: { type: string }
+              auth: { type: boolean }
+              desc: { type: string }
+            required: [name, path, method, auth, desc]
+      required: [ok, version, server_time, docs, endpoints]
+
+    # ---- /meta/mixer
+    MetaMixerResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        mixer:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              name: { type: string }
+              symbol: { type: string }
+              service_fee: { type: number, description: "percentage (e.g. 0.1 = 0.1%)" }
+              maintenance: { type: integer }
+              per_address_fee: { type: string, description: "8-decimal string" }
+              decimals: { type: integer }
+              confirmations: { type: integer }
+              networks:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    label: { type: string }
+                    min: { type: number }
+                    max: { type: number }
+                  required: [label, min, max]
+            required: [name, symbol, service_fee, maintenance, per_address_fee, decimals, confirmations, networks]
+      required: [ok, mixer]
+
+    # ---- /meta/exchange
+    MetaExchangeResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        exchange:
+          type: object
+          properties:
+            maintenance: { type: integer }
+            prices_usd:
+              type: object
+              additionalProperties: { type: string }
+            outputs:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  name: { type: string }
+                  symbol: { type: string }
+                  networks:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        label: { type: string }
+                        min_usd: { type: string }
+                        max_usd: { type: string }
+                        service_fee: { type: string }
+                      required: [label, min_usd, max_usd, service_fee]
+                required: [name, symbol, networks]
+          required: [maintenance, prices_usd, outputs]
+      required: [ok, exchange]
+
+    # ---- MIXER / Create
+    MixerCreateRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: ["create_order"]
+        addresses:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: object
+            properties:
+              address: { type: string }
+              percent: { type: string, description: "2 decimals (string)" }
+              delay: { type: string, description: "minutes or label e.g. '120' or '2h 0m'" }
+              destination_tag:
+                oneOf:
+                  - { type: string }
+                  - { type: "null" }
+            required: [address, percent, delay]
+        amount: { type: string, description: "8 decimals as string" }
+        crypto: { type: string, description: "lowercase coin code e.g. btc" }
+        network: { type: string, description: "lowercase network code e.g. btc" }
+        partner: { type: string }
+        service_fee: { type: number, description: "0.10 – 5.00 (%)" }
+        qrcode: { type: integer, description: "1=include base64 QR under deposit.qr_code" }
+      required: [action, addresses, amount, crypto, network]
+
+    MixerCreateResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        trackcode:
+          type: string
+          description: "16-character uppercase tracking code"
+        maintenance: { type: integer }
+        deposit:
+          type: object
+          properties:
+            address: { type: string }
+            name: { type: string }
+            symbol: { type: string }
+            network: { type: string }
+            network_label: { type: string }
+            deposit_amount: { type: string }
+            min_amount: { type: number }
+            max_amount: { type: number }
+            expires_at: { type: integer }
+            qr_code:
+              oneOf:
+                - { type: string }
+                - { type: "null" }
+          required: [address, name, symbol, network, network_label, deposit_amount, min_amount, max_amount, expires_at]
+        fees:
+          type: object
+          properties:
+            service_fee_percent: { type: number }
+            service_fee_value: { type: string }
+            fee_per_output: { type: string }
+            fee_outputs_total: { type: string }
+            fee_total: { type: string }
+          required: [service_fee_percent, service_fee_value, fee_per_output, fee_outputs_total, fee_total]
+        outputs:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              address: { type: string }
+              destination_tag:
+                oneOf:
+                  - { type: string }
+                  - { type: "null" }
+              share_percent: { type: number }
+              delay_minutes: { type: integer }
+              delay_label: { type: string }
+              amount: { type: string }
+              time: { type: integer }
+            required: [id, address, share_percent, delay_minutes, delay_label, amount, time]
+        signature_text: { type: string }
+      required: [ok, trackcode, maintenance, deposit, fees, outputs, signature_text]
+
+    # ---- EXCHANGE / Create
+    ExchangeCreateRequest:
+      type: object
+      properties:
+        from_coin: { type: string }
+        from_network: { type: string }
+        to_coin: { type: string }
+        to_network: { type: string }
+        to_address: { type: string }
+        destination_tag:
+          oneOf:
+            - { type: string }
+            - { type: "null" }
+        memo:
+          oneOf:
+            - { type: string }
+            - { type: "null" }
+        amount: { type: string }
+        service_fee: { type: number, description: "0.50 – 3.00 (%) clamp" }
+        partner: { type: string }
+        qrcode: { type: integer }
+      required: [from_coin, from_network, to_coin, to_network, to_address, amount]
+
+    ExchangeCreateResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        type: { type: string, enum: ["exchange"] }
+        trackcode: { type: string }
+        pair:
+          type: object
+          properties:
+            from: { type: string }
+            to: { type: string }
+          required: [from, to]
+        deposit:
+          type: object
+          properties:
+            address: { type: string }
+            name: { type: string }
+            symbol: { type: string }
+            network: { type: string }
+            network_label: { type: string }
+            deposit_amount: { type: string }
+            min_usd: { type: number }
+            max_usd: { type: number }
+            expires_at: { type: integer }
+            qr_code:
+              oneOf:
+                - { type: string }
+                - { type: "null" }
+          required: [address, name, symbol, network, network_label, deposit_amount, min_usd, max_usd, expires_at]
+        quote:
+          type: object
+          properties:
+            from:
+              type: object
+              properties:
+                coin: { type: string }
+                network: { type: string }
+                price_usd: { type: number }
+                amount: { type: string }
+                amount_usd: { type: string }
+              required: [coin, network, price_usd, amount, amount_usd]
+            to:
+              type: object
+              properties:
+                coin: { type: string }
+                network: { type: string }
+                price_usd: { type: number }
+                estimated_receive: { type: string }
+              required: [coin, network, price_usd, estimated_receive]
+            fee_percent: { type: number }
+            final_usd: { type: string }
+          required: [from, to, fee_percent, final_usd]
+        receive:
+          type: object
+          properties:
+            address: { type: string }
+            destination_tag:
+              oneOf:
+                - { type: string }
+                - { type: "null" }
+            coin: { type: string }
+            network: { type: string }
+            percent: { type: number }
+            delay_minutes: { type: integer }
+            delay_label: { type: string }
+            amount: { type: string }
+            time: { type: integer }
+          required: [address, coin, network, percent, delay_minutes, delay_label, amount, time]
+        outputs:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              address: { type: string }
+              destination_tag:
+                oneOf:
+                  - { type: string }
+                  - { type: "null" }
+              share_percent: { type: number }
+              delay_minutes: { type: integer }
+              delay_label: { type: string }
+              amount: { type: string }
+              time: { type: integer }
+            required: [id, address, share_percent, delay_minutes, delay_label, amount, time]
+        signature_text: { type: string }
+      required: [ok, type, trackcode, pair, deposit, quote, receive, outputs, signature_text]
+
+    # ---- Prices
+    PricesResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        base: { type: string, enum: ["USD"] }
+        ts: { type: integer }
+        prices:
+          type: object
+          additionalProperties:
+            type: string
+      required: [ok, base, ts, prices]
+
+    # ---- Orders / Check
+    OrderCheckRequest:
+      type: object
+      properties:
+        trackcode:
+          type: string
+          description: "16-character uppercase tracking code"
+        type:
+          type: string
+          enum: [mixer, exchange]
+          description: "optional"
+        outputs:
+          type: string
+          enum: [none, summary, full]
+          default: summary
+        mask_addresses:
+          type: boolean
+          default: true
+      required: [trackcode]
+
+    OrderFundingBlock:
+      type: object
+      properties:
+        waiting_balance: { type: string }
+        received_balance: { type: string }
+        remaining_need: { type: string }
+        is_fully_funded: { type: boolean }
+        can_start: { type: boolean }
+      required: [waiting_balance, received_balance, remaining_need, is_fully_funded, can_start]
+
+    OrderDepositBlock:
+      type: object
+      properties:
+        confirm_status:
+          type: integer
+          description: "0=no payment; 1=received pending; 2=fully confirmed & funded"
+        coin: { type: string }
+        network: { type: string }
+        delete_in_sec: { type: integer }
+        funding:
+          $ref: "#/components/schemas/OrderFundingBlock"
+      required: [confirm_status, coin, network, delete_in_sec, funding]
+
+    OrderOutputFull:
+      type: object
+      properties:
+        index: { type: integer }
+        address: { type: string }
+        destination_tag:
+          oneOf:
+            - { type: string }
+            - { type: "null" }
+        coin: { type: string }
+        network: { type: string }
+        share_percent: { type: number }
+        delay_label: { type: string }
+        delay_seconds: { type: integer }
+        state: { type: integer, description: "0 waiting, 1 processing, 2 complete" }
+        confirm: { type: integer, description: "0 pending, 1 confirmed (state=2)" }
+        tx: { type: string }
+        amount: { type: string }
+        left_seconds: { type: integer }
+      required:
+        [index, address, coin, network, share_percent, delay_label, delay_seconds, state, confirm, tx, amount, left_seconds]
+
+    OrderOutputsSummary:
+      type: object
+      properties:
+        count: { type: integer }
+        sent_count: { type: integer }
+        sent_total: { type: string }
+      required: [count, sent_count, sent_total]
+
+    OrderCheckResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        type: { type: string, enum: [mixer, exchange] }
+        trackcode: { type: string }
+        deposit:
+          $ref: "#/components/schemas/OrderDepositBlock"
+        status_reason:
+          type: string
+          description: 'e.g. "INSUFFICIENT_FUNDS" when underfunded'
+        outputs:
+          oneOf:
+            - type: array
+              items:
+                $ref: "#/components/schemas/OrderOutputFull"
+            - $ref: "#/components/schemas/OrderOutputsSummary"
+      required: [ok, type, trackcode, deposit, outputs]
+
+    # ---- Orders / Delete
+    OrderDeleteRequest:
+      type: object
+      properties:
+        trackcode: { type: string }
+        type:
+          type: string
+          enum: [mixer, exchange]
+      required: [trackcode]
+
+    OrderDeleteResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        trackcode: { type: string }
+        type: { type: string, enum: [mixer, exchange] }
+        deleted: { type: boolean }
+      required: [ok, trackcode, type, deleted]
+
+    # ---- Validate
+    ValidateRequest:
+      type: object
+      properties:
+        signature: { type: string, description: "raw Base64 or with BEGIN/END lines" }
+      required: [signature]
+
+    ValidateSuccess:
+      type: object
+      properties:
+        ok: { type: boolean, const: true }
+        message: { type: string }
+        type: { type: string, enum: [mixer, exchange] }
+        route: { type: string, description: "mixer: confirm|deposit|mixing, exchange: exc-deposit|exc-send" }
+        trackcode: { type: string }
+        order:
+          type: object
+          properties:
+            deposit_address: { type: string }
+            service_fee: { type: string, description: "2 decimals string" }
+            coin: { type: string }
+            network: { type: string }
+            waiting_balance: { type: string, description: "8 decimals string" }
+            created_at: { type: string, description: "Unix timestamp as string" }
+          required: [deposit_address, service_fee, coin, network, waiting_balance, created_at]
+        outputs:
+          type: array
+          items:
+            type: object
+            properties:
+              coin: { type: string }
+              network: { type: string }
+              address: { type: string }
+              destination_tag: { type: string }
+              share_percent: { type: string, description: "2 decimals string" }
+              delay_minutes: { type: integer }
+              delay_label: { type: string }
+              amount: { type: string, description: "8 decimals string" }
+            required: [coin, network, address, destination_tag, share_percent, delay_minutes, delay_label, amount]
+        outputs_count: { type: integer }
+      required: [ok, message, type, route, trackcode, order, outputs, outputs_count]
