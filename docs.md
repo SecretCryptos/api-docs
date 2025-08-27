@@ -7,7 +7,7 @@ The **SecretCryptos API** provides secure, simple, and consistent access to our 
 - **Live Docs:** https://secretcryptos.com/api
 
 ---
-
+🔑
 ## Authentication
 
 All authenticated requests require an API key.
@@ -21,8 +21,8 @@ Authorization: Bearer YOUR_API_KEY
 - **Do not** expose your API key in frontend JavaScript. Keep it server-side and proxy responses to the browser.
 
 ---
-
-## Getting your API Key 🆔 
+🆔
+## Getting your API Key 
 
 1. Go to the **Partner** page: https://secretcryptos.com/partner  
 2. Sign in or create an account.  
@@ -32,8 +32,8 @@ Authorization: Bearer YOUR_API_KEY
 > ⚠️ Keep your API key secret. Never share it publicly or hard-code it into public repositories.
 
 ---
-
-## Using your API key safely 🔒 
+🔒
+## Using your API key safely 
 
 **cURL (server-side)**
 ```bash
