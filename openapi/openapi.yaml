@@ -175,7 +175,7 @@ paths:
                 value:
                   action: "create_order"
                   addresses:
-                    - { address: "raGXwk3P9yCtT2mGKD7nQdRNDCPSgwb2Kb", percent: "100", delay: "0", destination_tag: "435757008" }
+                    - { address: "raGXwk3P9y...", percent: "100", delay: "0", destination_tag: "435757008" }
                   amount: "10.00000000"
                   crypto: "btc"
                   network: "btc"
